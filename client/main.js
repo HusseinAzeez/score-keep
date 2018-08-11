@@ -2,39 +2,46 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {Meteor} from 'meteor/meteor';
 import {Tracker} from 'meteor/tracker';
-
 import {Players} from './../imports/api/players';
 
-Tracker.autorun(function () {
-  console.log('Players list', Players.find().fetch());
-});
-
-const players = [{
-  _id: '1',
-  name: 'Lauren',
-  score: 102
-}, {
-  _id: '3',
-  name: 'Andrew',
-  score: -12
-}];
-
-const renderPlayers = function (playersList) {
-  return playersList.map(function (player) {
-    return <p key={player._id}>{player.name} has {player.score} point(s).</p>;
+const renderPlayers = (players) => {
+  return players.map((player) => {
+    return (
+      <p key={player._id}>
+        {player.name} has {player.score} point(s).
+        <button onClick={() => Players.remove({_id: player._id})}>X</button>
+      </p>
+    );
   });
 };
+const addPlayer = (event) => {
+  let name = event.target.playerName.value;
+  event.preventDefault();
+  if (name) {
+    event.target.playerName.value = '';
+    Players.insert({
+      name: name,
+      score: 15
+    });
+  }
+};
 
-Meteor.startup(function () {
-  let title = 'Score Keep';
-  let name = 'Mike';
-  let jsx = (
-    <div>
-      <h1>{title}</h1>
-      <p>Hello {name}!</p>
-      <p>This is my second p.</p>
-      {renderPlayers(players)}
-    </div>
-  );
-  ReactDOM.render(jsx, document.getElementById('app'));
+Meteor.startup(() => {
+  Tracker.autorun(() => {
+    let players = Players.find().fetch();
+    let title = 'Score Keep';
+    let name = 'Xizors';
+    let jsx = (
+      <div>
+        <h1>{title}</h1>
+        <p>Hello {name}!</p>
+        {renderPlayers(players)}
+        <form onSubmit={addPlayer}>
+          <input type="text" name="playerName" placeholder="Player Name"/>
+          <button>Add Player</button>
+        </form>
+      </div>
+    );
+    ReactDOM.render(jsx, document.getElementById('app'));
+  });
 });
